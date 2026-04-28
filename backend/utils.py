@@ -30,12 +30,18 @@ def preprocess_email(text: str) -> str:
 
 def extract_json_from_llm_response(text: str) -> str:
     """
-    Extracts JSON from an LLM response that might have markdown formatting.
+    Extracts JSON from an LLM response that might have markdown formatting or extra text.
     """
-    # Find everything between ```json and ```
+    # 1. Try to find markdown code blocks
     match = re.search(r"```json\s*(.*?)\s*```", text, re.DOTALL)
     if match:
-        return match.group(1)
+        return match.group(1).strip()
     
-    # Sometimes it just outputs valid json without markdown
+    # 2. Try to find the first '{' and last '}'
+    start = text.find('{')
+    end = text.rfind('}')
+    if start != -1 and end != -1 and end > start:
+        return text[start:end+1].strip()
+    
+    # 3. Fallback to just stripping
     return text.strip()
