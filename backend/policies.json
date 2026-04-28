@@ -1,0 +1,27 @@
+[
+  {
+    "id": "policy_1",
+    "topic": "Refunds",
+    "policy": "Refunds are allowed within 7 days of receiving the item. The item must be unused, in its original packaging, and with all tags attached. Refunds will be processed to the original payment method within 5-7 business days."
+  },
+  {
+    "id": "policy_2",
+    "topic": "Exchanges",
+    "policy": "Exchanges are allowed within 14 days of purchase. Exchanges are only applicable for items that are defective, damaged upon arrival, or if the wrong item was sent. We do not exchange for a different color or size."
+  },
+  {
+    "id": "policy_3",
+    "topic": "Store Credit",
+    "policy": "Store credit is issued for late returns (between 8 and 30 days of receiving the item) or for non-refundable items returned as an exception. Store credit is valid for 12 months."
+  },
+  {
+    "id": "policy_4",
+    "topic": "Escalation - Safety/Health",
+    "policy": "If a customer reports any safety concerns, health issues, allergies, or severe defects related to baby products (formula, car seats, toys), immediately escalate the ticket to a human manager. Do not process an automatic refund or exchange without manager approval."
+  },
+  {
+    "id": "policy_5",
+    "topic": "Missing Items",
+    "policy": "If an item is missing from an order, the customer must report it within 48 hours of delivery. We will verify the package weight and dispatch a replacement immediately if verified."
+  }
+]

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mumzworld Customer Support AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">M</div>
+            <h1>Customer Support Triager</h1>
+        </header>
+
+        <main>
+            <div class="input-section">
+                <label for="email-input">Customer Email</label>
+                <textarea id="email-input" placeholder="Paste the customer's email here (English or Arabic)..."></textarea>
+                <button id="analyze-btn">
+                    <span id="btn-text">Analyze Email</span>
+                    <span id="loading-spinner" class="hidden"></span>
+                </button>
+            </div>
+
+            <div id="error-message" class="hidden"></div>
+
+            <div id="output-section" class="hidden">
+                <div class="output-grid">
+                    <div class="card intent-card">
+                        <h3>Intent</h3>
+                        <div id="out-intent" class="badge"></div>
+                    </div>
+                    <div class="card urgency-card">
+                        <h3>Urgency</h3>
+                        <div id="out-urgency" class="badge"></div>
+                    </div>
+                    <div class="card confidence-card">
+                        <h3>Confidence</h3>
+                        <div class="progress-bar">
+                            <div id="conf-fill"></div>
+                        </div>
+                        <div id="out-conf-text"></div>
+                    </div>
+                </div>
+
+                <div class="card reasoning-card">
+                    <h3>AI Reasoning</h3>
+                    <p id="out-reasoning"></p>
+                </div>
+
+                <div class="card reply-card">
+                    <h3>Suggested Reply</h3>
+                    <p id="out-reply"></p>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
