@@ -24,28 +24,21 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Initialize RAG on startup
     logger.info("Initializing RAG...")
-    try:
-        init_rag()
-        logger.info("RAG initialized successfully ✅")
-    except Exception as e:
-        logger.error(f"RAG INIT FAILED ❌: {e}")
-        logger.info("Server will continue starting without RAG for debugging.")
+    init_rag()
     yield
+    # Cleanup (if any)
 
 app = FastAPI(title="Mumzworld Customer Support AI", lifespan=lifespan)
 
-# Allow CORS for frontend (especially for your Netlify app)
+# Allow CORS for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Allows your Netlify app to call this API
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-@app.get("/test-server")
-def test_server():
-    return {"message": "Mumzworld AI Support Server is running"}
 
 @app.get("/health")
 def health_check():

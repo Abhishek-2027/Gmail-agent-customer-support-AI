@@ -35,8 +35,11 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 90000);
 
+    // FORCE LOCALHOST FOR RELIABILITY
+    const API_URL = "http://localhost:8000/analyze";
+
     try {
-        const response = await fetch('/analyze', {
+        const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email_text: emailText }),
@@ -45,12 +48,19 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
 
         clearTimeout(timeoutId);
 
-        if (!response.ok) {
-            const errData = await response.json();
-            throw new Error(errData.detail || 'Something went wrong on the server.');
+        let data;
+        try {
+            data = await response.json();
+        } catch (e) {
+            if (!response.ok) {
+                throw new Error(`Server Error (${response.status}): Could not parse error response.`);
+            }
+            throw new Error("Failed to parse AI response. The server might be returning an invalid format.");
         }
 
-        const data = await response.json();
+        if (!response.ok) {
+            throw new Error(data.detail || 'Something went wrong on the server.');
+        }
         
         // Save to History
         saveToHistory(emailText, data);

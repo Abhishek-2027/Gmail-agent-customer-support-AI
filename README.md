@@ -80,7 +80,7 @@ We built an **AI Support Triager** that acts as a "Digital Assistant" for suppor
    uvicorn backend.main:app --reload
    ```
 2. Open the frontend:
-   Simply open `frontend/index.html` in your web browser.
+   Visit **`http://localhost:8000`** in your browser. (Alternatively, you can open `frontend/index.html` directly, but the hosted URL is recommended).
 
 ## Evaluations (eval.py)
 To ensure the system is production-ready, I implemented a suite of **10 test cases** covering various scenarios.
