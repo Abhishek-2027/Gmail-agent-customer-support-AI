@@ -135,7 +135,7 @@ async def detect_language_and_urgency_and_intent(email_text: str) -> Dict[str, A
         "You are a customer support triage AI.\n"
         "Analyze the email and return ONLY a raw JSON object:\n"
         '  "language": "en" or "ar"\n'
-        '  "intent": one of [refund, exchange, store_credit, escalate, unknown]\n'
+        '  "intent": one of [refund, exchange, store_credit, order_tracking, escalate, unknown]\n'
         '  "urgency": one of [low, medium, high]\n'
         '  "confidence": float 0.0-1.0\n'
         "No markdown."

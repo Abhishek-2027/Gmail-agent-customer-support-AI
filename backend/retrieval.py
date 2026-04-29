@@ -1,19 +1,21 @@
 import json
 import os
-import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
-# Global variables to hold the vectorizer and TF-IDF matrix
-_vectorizer = None
-_tfidf_matrix = None
+# Disable ChromaDB telemetry before import
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
+
+import chromadb
+from chromadb.utils import embedding_functions
+
+# Global variables to hold the Chroma collection
+_collection = None
 _policies = []
 
 def init_rag(filepath: str = "policies.json"):
     """
-    Initializes the in-memory RAG by loading policies and fitting TF-IDF.
+    Initializes the ChromaDB vector store by loading policies and embedding them.
     """
-    global _vectorizer, _tfidf_matrix, _policies
+    global _collection, _policies
     
     # Resolve absolute path for policies.json
     base_dir = os.path.dirname(__file__)
@@ -26,36 +28,65 @@ def init_rag(filepath: str = "policies.json"):
     with open(full_path, "r", encoding="utf-8") as f:
         _policies = json.load(f)
 
-    # Prepare texts for TF-IDF (combining topic and policy)
-    texts = [f"{p['topic']} {p['policy']}" for p in _policies]
+    # Initialize Ephemeral Chroma Client
+    from chromadb.config import Settings
+    client = chromadb.Client(Settings(anonymized_telemetry=False))
     
-    _vectorizer = TfidfVectorizer(stop_words='english')
-    _tfidf_matrix = _vectorizer.fit_transform(texts)
+    # Use Sentence Transformers for local semantic embeddings
+    # 'all-MiniLM-L6-v2' is fast, lightweight, and effective for support queries
+    ef = embedding_functions.SentenceTransformerEmbeddingFunction(model_name="all-MiniLM-L6-v2")
+    
+    # Create or reset collection
+    collection_name = "mumzworld_policies"
+    try:
+        client.delete_collection(name=collection_name)
+    except:
+        pass
+        
+    _collection = client.create_collection(name=collection_name, embedding_function=ef)
+
+    # Prepare data for Chroma
+    documents = [f"{p['topic']}: {p['policy']}" for p in _policies]
+    metadatas = [{"topic": p["topic"], "id": p.get("id", f"p_{i}")} for i, p in enumerate(_policies)]
+    ids = [p.get("id", f"p_{i}") for i, p in enumerate(_policies)]
+
+    # Add to collection
+    _collection.add(
+        documents=documents,
+        metadatas=metadatas,
+        ids=ids
+    )
 
 def retrieve_policy(query: str, top_k: int = 2) -> list:
     """
-    Retrieves the top_k most relevant policies for the given query.
+    Retrieves the top_k most relevant policies for the given query using semantic search.
     """
-    if _vectorizer is None or _tfidf_matrix is None or not _policies:
+    if _collection is None:
         return []
 
-    query_vec = _vectorizer.transform([query])
-    similarities = cosine_similarity(query_vec, _tfidf_matrix).flatten()
-    
-    # Get top k indices
-    top_indices = np.argsort(similarities)[::-1][:top_k]
-    
-    # Filter out low similarity scores
-    results = []
-    for idx in top_indices:
-        if similarities[idx] > 0.05: # Minimum threshold
-            results.append({
-                "topic": _policies[idx]["topic"],
-                "policy": _policies[idx]["policy"],
-                "score": float(similarities[idx])
+    results = _collection.query(
+        query_texts=[query],
+        n_results=top_k
+    )
+
+    # Chroma returns results in a nested structure
+    # distances are also returned. For cosine sim, lower is better (0.0 = identical).
+    # We'll convert distance to a similarity score for the pipeline logic.
+    retrieved = []
+    if results['documents']:
+        for i in range(len(results['documents'][0])):
+            distance = results['distances'][0][i]
+            # Convert distance to similarity (rough approximation: 1 / (1 + distance))
+            similarity = 1.0 / (1.0 + distance)
+            
+            retrieved.append({
+                "topic": results['metadatas'][0][i]['topic'],
+                "policy": results['documents'][0][i].split(": ", 1)[1] if ": " in results['documents'][0][i] else results['documents'][0][i],
+                "score": float(similarity)
             })
-    
-    return results
+
+    # Filter out low similarity scores (threshold adjusted for embeddings)
+    return [r for r in retrieved if r['score'] > 0.4]
 
 def get_context_string(results: list) -> str:
     """

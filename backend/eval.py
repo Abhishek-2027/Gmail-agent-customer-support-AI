@@ -1,5 +1,12 @@
 import asyncio
 import json
+import os
+import logging
+
+# Suppress ChromaDB telemetry logs
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
+logging.getLogger("chromadb.telemetry.product.posthog").setLevel(logging.CRITICAL)
+
 from pipeline import run_pipeline
 from retrieval import init_rag
 from pydantic import ValidationError

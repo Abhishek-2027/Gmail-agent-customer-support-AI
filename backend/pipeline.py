@@ -1,7 +1,8 @@
 from typing import Dict, Any
-from utils import preprocess_email
+from utils import preprocess_email, extract_order_id
 from llm_engine import detect_language_and_urgency_and_intent, generate_response
 from retrieval import retrieve_policy, get_context_string
+from tools import get_order_details
 
 def compute_confidence(classification_conf: float, rag_score: float, is_unknown: bool) -> float:
     """
@@ -44,20 +45,38 @@ async def run_pipeline(email_text: str) -> Dict[str, Any]:
     # Determine if fallback is needed
     is_unknown = (intent == "unknown" or class_conf < 0.5)
 
-    # Step 5: Retrieval (RAG)
-    # We query with the text and the intent
+    # Step 5: Retrieval (RAG) & Tool Calling
+    # PROACTIVE TOOL CALLING: If we see an Order ID, we always check it!
+    order_id = extract_order_id(clean_text)
+    tool_output = ""
+    if order_id:
+        tool_output = get_order_details(order_id)
+    elif intent == "order_tracking":
+        tool_output = "No Order ID found in the email. Ask the customer for their MW-XXXX order number."
+
+    # Standard RAG query
     rag_query = f"{intent} {clean_text}"
     retrieved_docs = retrieve_policy(rag_query)
     context_str = get_context_string(retrieved_docs)
+    
+    # Combine context with tool output if available
+    if tool_output:
+        context_str = f"TOOL_OUTPUT (Order Data): {tool_output}\n\n" + context_str
     
     rag_score = max([d["score"] for d in retrieved_docs]) if retrieved_docs else 0.0
 
     # Step 6: Compute Final Confidence
     final_confidence = compute_confidence(class_conf, rag_score, is_unknown)
 
+    # CRITICAL FIX: If a tool successfully found data, we are much more confident!
+    if tool_output and "Order Found" in tool_output:
+        final_confidence = max(final_confidence, 0.85)
+        is_unknown = False
+        intent = "order_tracking"
+
     # Re-evaluate fallback mode based on final confidence
     is_unknown = (is_unknown or final_confidence < 0.5)
-    if is_unknown:
+    if is_unknown and not tool_output:
         intent = "unknown"
 
     # Step 7: Generate Final Response (Complex LLM)

@@ -38,10 +38,22 @@ def extract_json_from_llm_response(text: str) -> str:
         return match.group(1).strip()
     
     # 2. Try to find the first '{' and last '}'
+    # We use a greedy approach to find the outermost brackets
     start = text.find('{')
+    if start == -1:
+        return text.strip()
+        
+    # Find the matching closing bracket for the first opening bracket
+    # A simple but often effective way is to find the last '}'
     end = text.rfind('}')
-    if start != -1 and end != -1 and end > start:
+    if end != -1 and end > start:
         return text[start:end+1].strip()
     
-    # 3. Fallback to just stripping
     return text.strip()
+
+def extract_order_id(text: str) -> str:
+    """
+    Regex to find Mumzworld Order IDs (e.g., MW-1001).
+    """
+    match = re.search(r"MW-\d{4}", text, re.IGNORECASE)
+    return match.group(0).upper() if match else ""

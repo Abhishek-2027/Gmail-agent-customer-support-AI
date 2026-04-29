@@ -31,7 +31,7 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
     const timeoutId = setTimeout(() => controller.abort(), 90000);
 
     try {
-        const response = await fetch('http://localhost:8000/analyze', {
+        const response = await fetch('/analyze', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email_text: emailText }),
