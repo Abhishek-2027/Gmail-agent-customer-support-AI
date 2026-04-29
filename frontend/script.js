@@ -1,3 +1,8 @@
+// Initialize History on load
+document.addEventListener('DOMContentLoaded', () => {
+    updateHistoryUI();
+});
+
 document.getElementById('analyze-btn').addEventListener('click', async () => {
     const emailText = document.getElementById('email-input').value.trim();
     if (!emailText) {
@@ -46,6 +51,10 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
         }
 
         const data = await response.json();
+        
+        // Save to History
+        saveToHistory(emailText, data);
+        
         displayResults(data);
 
     } catch (error) {
@@ -100,6 +109,44 @@ function displayResults(data) {
     
     confText.textContent = `${confPercentage}% Confident`;
 
+    // Visual Order Card
+    const orderContainer = document.getElementById('order-card-container');
+    if (data.order_details) {
+        const order = data.order_details;
+        const statusClass = order.status.toLowerCase().includes('delivered') ? 'status-delivered' : 
+                          order.status.toLowerCase().includes('transit') ? 'status-transit' : 'status-processing';
+        
+        orderContainer.innerHTML = `
+            <div class="order-card">
+                <div class="order-header">
+                    <span class="order-id">Order ${order.order_id}</span>
+                    <span class="order-status-pill ${statusClass}">${order.status}</span>
+                </div>
+                <div class="order-details-grid">
+                    <div>
+                        <div class="detail-label">Items</div>
+                        <div>${order.items.join(', ')}</div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Tracking</div>
+                        <div>${order.tracking_number}</div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Customer</div>
+                        <div>${order.customer_email}</div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Update</div>
+                        <div>${order.delivery_date || order.estimated_delivery || 'N/A'}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+        orderContainer.classList.remove('hidden');
+    } else {
+        orderContainer.classList.add('hidden');
+    }
+
     // Text areas
     document.getElementById('out-reasoning').textContent = data.reasoning;
     
@@ -114,6 +161,59 @@ function displayResults(data) {
         replyEl.style.direction = 'ltr';
     }
 }
+
+// Copy to Clipboard
+document.getElementById('copy-btn').addEventListener('click', () => {
+    const text = document.getElementById('out-reply').textContent;
+    navigator.clipboard.writeText(text).then(() => {
+        const btn = document.getElementById('copy-btn');
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = 'Copy Reply', 2000);
+    });
+});
+
+// History Logic
+function saveToHistory(text, data) {
+    const history = JSON.parse(localStorage.getItem('cs_history') || '[]');
+    const newItem = {
+        id: Date.now(),
+        preview: text.substring(0, 40) + '...',
+        intent: data.intent,
+        urgency: data.urgency,
+        fullText: text,
+        results: data,
+        timestamp: new Date().toLocaleTimeString()
+    };
+    history.unshift(newItem);
+    localStorage.setItem('cs_history', JSON.stringify(history.slice(0, 10))); // keep 10
+    updateHistoryUI();
+}
+
+function updateHistoryUI() {
+    const history = JSON.parse(localStorage.getItem('cs_history') || '[]');
+    const list = document.getElementById('history-list');
+    
+    if (history.length === 0) return;
+
+    list.innerHTML = history.map(item => `
+        <div class="history-item" onclick="loadFromHistory(${item.id})">
+            <div>${item.preview}</div>
+            <div class="history-meta">
+                <span>${item.intent}</span>
+                <span>${item.timestamp}</span>
+            </div>
+        </div>
+    `).join('');
+}
+
+window.loadFromHistory = (id) => {
+    const history = JSON.parse(localStorage.getItem('cs_history') || '[]');
+    const item = history.find(i => i.id === id);
+    if (item) {
+        document.getElementById('email-input').value = item.fullText;
+        displayResults(item.results);
+    }
+};
 
 function showError(message) {
     const errorMsg = document.getElementById('error-message');

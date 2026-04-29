@@ -14,6 +14,131 @@
     --urgency-high: #ef4444;
 }
 
+/* App Layout */
+.app-layout {
+    display: flex;
+    width: 100%;
+    max-width: 1400px;
+    height: 90vh;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    border-radius: 30px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+}
+
+.sidebar {
+    width: 300px;
+    background: rgba(255, 255, 255, 0.5);
+    border-right: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+.sidebar h3 {
+    font-size: 1.2rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary);
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem 4rem;
+    overflow-y: auto;
+}
+
+/* History Items */
+.history-item {
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.history-item:hover {
+    transform: translateX(5px);
+    border-color: var(--primary);
+}
+
+.history-meta {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    opacity: 0.7;
+}
+
+/* Visual Order Card */
+.order-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border-radius: 20px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    border-left: 6px solid var(--primary);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.order-id {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+.order-status-pill {
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.status-delivered { background: #dcfce7; color: #166534; }
+.status-transit { background: #fef9c3; color: #854d0e; }
+.status-processing { background: #dbeafe; color: #1e40af; }
+
+.order-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    font-size: 0.9rem;
+}
+
+.detail-label {
+    opacity: 0.6;
+    font-size: 0.8rem;
+}
+
+/* Small Utility Buttons */
+.reply-header {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 0.5rem;
+}
+
+.small-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.75rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.small-btn:hover {
+    opacity: 0.8;
+}
+
 * {
     box-sizing: border-box;
     margin: 0;

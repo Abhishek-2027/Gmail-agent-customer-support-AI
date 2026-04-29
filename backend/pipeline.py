@@ -1,3 +1,4 @@
+import json
 from typing import Dict, Any
 from utils import preprocess_email, extract_order_id
 from llm_engine import detect_language_and_urgency_and_intent, generate_response
@@ -31,7 +32,8 @@ async def run_pipeline(email_text: str) -> Dict[str, Any]:
             "urgency": "low",
             "confidence": 0.0,
             "reasoning": "Email is empty or only contains noise.",
-            "suggested_reply": "Could you please provide more details about your request? Your email appears to be empty."
+            "suggested_reply": "Could you please provide more details about your request? Your email appears to be empty.",
+            "order_details": None
         }
 
     # Step 2 & 3 & 4: Language, Intent, Urgency (Fast LLM)
@@ -49,8 +51,17 @@ async def run_pipeline(email_text: str) -> Dict[str, Any]:
     # PROACTIVE TOOL CALLING: If we see an Order ID, we always check it!
     order_id = extract_order_id(clean_text)
     tool_output = ""
+    raw_order_data = None
     if order_id:
+        # We'll use a modified version of tool call or just handle the dict here
+        # For simplicity, we search the mock DB directly here to get the dict
+        from tools import get_order_details
         tool_output = get_order_details(order_id)
+        if "Order Found:" in tool_output:
+            try:
+                raw_order_data = json.loads(tool_output.split("Order Found: ", 1)[1])
+            except:
+                pass
     elif intent == "order_tracking":
         tool_output = "No Order ID found in the email. Ask the customer for their MW-XXXX order number."
 
@@ -98,5 +109,6 @@ async def run_pipeline(email_text: str) -> Dict[str, Any]:
         "urgency": urgency,
         "confidence": final_confidence,
         "reasoning": reasoning,
-        "suggested_reply": suggested_reply
+        "suggested_reply": suggested_reply,
+        "order_details": raw_order_data
     }

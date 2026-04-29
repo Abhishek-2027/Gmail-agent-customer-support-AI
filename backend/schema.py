@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Literal
+from typing import Literal, Optional
 
 class EmailRequest(BaseModel):
     email_text: str = Field(..., description="The raw customer email text")
@@ -10,3 +10,4 @@ class OutputResponse(BaseModel):
     confidence: float = Field(..., ge=0.0, le=1.0)
     reasoning: str
     suggested_reply: str
+    order_details: Optional[dict] = None

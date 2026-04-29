@@ -8,13 +8,21 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="logo">M</div>
-            <h1>Customer Support Triager</h1>
-        </header>
+        <div class="app-layout">
+            <aside class="sidebar">
+                <h3>History</h3>
+                <div id="history-list">
+                    <!-- History items will be injected here -->
+                    <div class="empty-history">No emails analyzed yet.</div>
+                </div>
+            </aside>
 
-        <main>
+            <div class="main-content">
+                <header>
+                    <div class="logo">M</div>
+                    <h1>Customer Support Triager</h1>
+                </header>
+
             <div class="input-section">
                 <label for="email-input">Customer Email</label>
                 <textarea id="email-input" placeholder="Paste the customer's email here (English or Arabic)..."></textarea>
@@ -45,6 +53,9 @@
                     </div>
                 </div>
 
+                <!-- Visual Order Card (New Feature) -->
+                <div id="order-card-container" class="hidden"></div>
+
                 <div class="card reasoning-card">
                     <h3>AI Reasoning</h3>
                     <p id="out-reasoning"></p>
@@ -52,10 +63,14 @@
 
                 <div class="card reply-card">
                     <h3>Suggested Reply</h3>
+                    <div class="reply-header">
+                        <button id="copy-btn" class="small-btn">Copy Reply</button>
+                    </div>
                     <p id="out-reply"></p>
                 </div>
+                </div>
             </div>
-        </main>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>

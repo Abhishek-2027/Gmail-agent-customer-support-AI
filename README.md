@@ -26,16 +26,26 @@ We built an **AI Support Triager** that acts as a "Digital Assistant" for suppor
 3.  **The Output (The Result)**:
     *   **Suggested Reply**: *"I see you'd like to return your stroller from order MW-2002. Since it was delivered 2 days ago, you are within our 14-day return window. Would you like me to start the return process for you?"*
 
+---
+
+## 🎯 Why this fits the Mumzworld Brief
+*   **Real Use Case**: Solves the high-volume email triage problem for the support team.
+*   **Non-Trivial Engineering**: Combines **RAG** (ChromaDB), **Tool Use** (Order DB), and **Advanced UI** (History/Cards).
+*   **Multilingual**: Native support for **Arabic** (RTL logic) and **English**.
+*   **Honest Uncertainty**: Implements a `fallback_mode` that refuses to guess when confidence is low.
+
 ## Advanced Architecture (Production Ready)
 
-1. **Throttling & Rate Limiting**: Implements a global **1 request per second** throttle to ensure stability and eliminate `429 Too Many Requests` errors.
-2. **In-Memory Caching**: Implements a SHA-256 hashed response cache. Repeat requests for the same input are **instant** and use **zero API tokens**.
-3. **Preprocessing Layer**: Cleans up text and removes signatures/greetings to reduce LLM noise.
-4. **Classification (Fast LLM)**: Uses `meta-llama/llama-3-8b-instruct` to quickly determine Language, Intent, and Urgency in a single call.
-5. **Advanced RAG (Vector DB)**: Uses **ChromaDB** with **Sentence-Transformers** (`all-MiniLM-L6-v2`) for semantic search. This ensures the system understands the meaning of queries (e.g., matching "money back" to "refund policy") rather than just keyword matching.
-6. **Generation & Reasoning (Complex LLM)**: Uses `deepseek/deepseek-chat` to generate high-quality, grounded responses with clear reasoning.
-7. **Confidence Scorer**: Calculates a weighted score combining LLM confidence and semantic similarity.
-8. **Exponential Backoff**: Implements 3 retries (1s, 2s, 4s) to handle transient API issues.
+1. **Dual-Model Pipeline**: Uses `Llama 3` for high-speed triage and `DeepSeek` for sophisticated, grounded generation.
+2. **Proactive Tool Calling**: Automatically triggers order lookups in the backend if an Order ID (e.g., `MW-1001`) is detected, bypassing the need for a separate agent loop.
+3. **Hybrid RAG**: Combines **Vector Search (ChromaDB)** for store policies with **Direct Tool Access** for live order data.
+4. **Agentic UI Components**:
+    *   **Visual Order Card**: Renders live data (status, items, tracking) as a premium UI component.
+    *   **History Sidebar**: Implements a persistent queue using `localStorage` for agent productivity.
+5. **Stability Layer**:
+    *   **Throttling**: Global 1 req/s throttle.
+    *   **Caching**: SHA-256 hashed in-memory cache for instant repeat lookups.
+    *   **Retries**: Exponential backoff (1s, 2s, 4s) for API resilience.
 
 ## Setup Instructions
 
